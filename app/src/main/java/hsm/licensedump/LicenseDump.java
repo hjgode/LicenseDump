@@ -9,12 +9,9 @@ import android.net.Uri;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.method.DateTimeKeyListener;
-import android.text.method.MovementMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,8 +24,6 @@ import com.intentfilter.androidpermissions.PermissionManager;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -49,7 +44,8 @@ public class LicenseDump extends AppCompatActivity {
     Context context=this;
     final static String TAG="LicenseDump";
 
-    TextView textView;
+    TextView textDump;
+    TextView textFile;
     Button btnRefersh;
 
     @Override
@@ -57,8 +53,10 @@ public class LicenseDump extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_license_dump);
 
-        textView=(TextView)findViewById(R.id.textView2);
-        textView.setMovementMethod(new ScrollingMovementMethod());
+        textFile =(TextView)findViewById(R.id.txtFile);
+
+        textDump =(TextView)findViewById(R.id.txtDump);
+        textDump.setMovementMethod(new ScrollingMovementMethod());
 
         checkPermissions(context);
 
@@ -108,8 +106,10 @@ public class LicenseDump extends AppCompatActivity {
             Date date=new Date();
             sb.append(date.toGMTString()+"\n");
 
-            sb.append("Model: " + hsm.util.SystemPropertyAccess.getModelCode()+"\n");
-            sb.append("Serial: " + hsm.util.SystemPropertyAccess.getSerialNumber()+"\n");
+            String sModelCode=hsm.util.SystemPropertyAccess.getModelCode();
+            String sSerial=hsm.util.SystemPropertyAccess.getSerialNumber();
+            sb.append("Model: " + sModelCode+"\n");
+            sb.append("Serial: " + sSerial+"\n");
             sb.append("============================\n");
 
             for (License license : licenses) {
@@ -125,20 +125,20 @@ public class LicenseDump extends AppCompatActivity {
                 sb.append("============================\n");
                 Log.d(TAG,"\n=======================\n");
             }
-            textView.setText(sb.toString());
+            textDump.setText(sb.toString());
 
-            saveFile(sb.toString());
+            saveFile(sModelCode+"_"+sSerial+".txt", sb.toString());
 
 //            LicenseViewActivity.this.setListAdapter(new ArrayAdapter(LicenseViewActivity.this, R.layout.details_activity_action, features));
             //setListAdapter(new ArrayAdapter(LicenseViewActivity.this, android.R.layout.simple_list_item_1, features));
         }
     }
 
-    void saveFile(String s){
+    void saveFile(String sFilename, String s){
         if (!isExternalStorageAvailable() || isExternalStorageReadOnly()) {
             Toast.makeText(context, "External storage not writeable",Toast.LENGTH_LONG);
         }
-        String filename = "LicenseDump.txt";
+        String filename = sFilename;
         File filepath = getDocumentsStorageDir();
         File myExternalFile;
         try {
@@ -148,10 +148,15 @@ public class LicenseDump extends AppCompatActivity {
             fos.close();
             updateMTP(myExternalFile,context,TAG);
             Toast.makeText(context, "File saved to "+myExternalFile.toString(),Toast.LENGTH_LONG);
+            textFile.setText("File saved to "+myExternalFile.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+    }
+    void saveFile(String s){
+        String filename = "LicenseDump.txt";
+        saveFile(filename, s);
     }
 
     public static File getDocumentsStorageDir() {

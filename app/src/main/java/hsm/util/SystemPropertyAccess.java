@@ -69,6 +69,9 @@ public class SystemPropertyAccess {
 
     public static final String[][] PROPERTY_KEYWORDS;
 
+    /*
+    see also adb shell getprop
+    */
     static {
         String[][] r0 = new String[30][];
         r0[0] = new String[]{"ro.hsm.assembly.date", "ID_FINAL_ASSEMBLY_DATE"};
@@ -111,7 +114,12 @@ public class SystemPropertyAccess {
             String defaultValue=null;
             String result = (String) SystemProperties.getMethod("get", new Class[]{String.class, String.class}).invoke(SystemProperties, new Object[]{name, defaultValue});
             if (result.equals("")) {
-                return "Not Supported";
+                name="ro.product.model";
+                result = (String) SystemProperties.getMethod("get", new Class[]{String.class, String.class}).invoke(SystemProperties, new Object[]{name, defaultValue});
+                if (result.equals(""))
+                    return "Not Supported";
+                else
+                    return result;
             }
             return result;
         } catch (Exception e) {
@@ -153,7 +161,12 @@ public class SystemPropertyAccess {
             String defaultValue=null;
             String result = (String) SystemProperties.getMethod("get", new Class[]{String.class, String.class}).invoke(SystemProperties, new Object[]{name, defaultValue});
             if (result.equals("")) {
-                return "Not Supported";
+                name="ro.serialno";
+                result = (String) SystemProperties.getMethod("get", new Class[]{String.class, String.class}).invoke(SystemProperties, new Object[]{name, defaultValue});
+                if (result.equals(""))
+                    return "Not Supported";
+                else
+                    return result;
             }
             return result;
         } catch (Exception e) {
