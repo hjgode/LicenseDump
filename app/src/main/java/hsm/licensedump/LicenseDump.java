@@ -9,11 +9,16 @@ import android.net.Uri;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.DateTimeKeyListener;
+import android.text.method.MovementMethod;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.honeywell.licenseviewer.LicenseViewActivity;
 import com.honeywell.licensing.License;
 import com.honeywell.licensing.LicenseListCallback;
 import com.honeywell.licensing.LicenseManager;
@@ -22,7 +27,10 @@ import com.intentfilter.androidpermissions.PermissionManager;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,10 +49,16 @@ public class LicenseDump extends AppCompatActivity {
     Context context=this;
     final static String TAG="LicenseDump";
 
+    TextView textView;
+    Button btnRefersh;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_license_dump);
+
+        textView=(TextView)findViewById(R.id.textView2);
+        textView.setMovementMethod(new ScrollingMovementMethod());
 
         checkPermissions(context);
 
@@ -54,6 +68,14 @@ public class LicenseDump extends AppCompatActivity {
         registerReceiver(this.mLicenseReceiver, filter);
 
         refreshLicenseList();
+
+        btnRefersh=(Button)findViewById(R.id.btnRefresh);
+        btnRefersh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                refreshLicenseList();
+            }
+        });
     }
 
     class myBroadcastReceiver extends BroadcastReceiver {
@@ -82,6 +104,14 @@ public class LicenseDump extends AppCompatActivity {
             }
             List<String> features = new ArrayList(licenses.size());
             StringBuilder sb=new StringBuilder();
+
+            Date date=new Date();
+            sb.append(date.toGMTString()+"\n");
+
+            sb.append("Model: " + hsm.util.SystemPropertyAccess.getModelCode()+"\n");
+            sb.append("Serial: " + hsm.util.SystemPropertyAccess.getSerialNumber()+"\n");
+            sb.append("============================\n");
+
             for (License license : licenses) {
                 features.add(license.getFeature());
                 mLicenses.put(license.getFeature(), license);
@@ -95,6 +125,8 @@ public class LicenseDump extends AppCompatActivity {
                 sb.append("============================\n");
                 Log.d(TAG,"\n=======================\n");
             }
+            textView.setText(sb.toString());
+
             saveFile(sb.toString());
 
 //            LicenseViewActivity.this.setListAdapter(new ArrayAdapter(LicenseViewActivity.this, R.layout.details_activity_action, features));

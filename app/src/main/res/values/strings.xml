@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">License Viewer</string>
+    <string name="app_name">License Dump</string>
     <string name="action_request_demo">Request demo license</string>
     <string name="action_check_licensed">Is this valid?</string>
 </resources>
